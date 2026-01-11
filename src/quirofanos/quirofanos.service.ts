@@ -10,6 +10,10 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
 import { PrismaClient } from '../../generated/prisma/client';
 import { ChangeQuirofanoStatusDto } from './dto';
+import { PaginationDto } from 'src/common/dtos/pagination.dto';
+import { last } from 'rxjs';
+import { RpcException } from '@nestjs/microservices';
+import { status } from '../common/grpc-status';
 @Injectable()
 export class QuirofanosService
   extends PrismaClient
@@ -40,27 +44,88 @@ export class QuirofanosService
     this.logger.log('Prisma desconectado de la base de datos');
   }
 
-  create(createQuirofanoDto: CreateQuirofanoDto) {
-    return this.quirofano.create({ data: createQuirofanoDto });
+  async create(createQuirofanoDto: CreateQuirofanoDto) {
+    try {
+      return await this.quirofano.create({ data: createQuirofanoDto });
+    } catch (error) {
+      throw new RpcException({
+        status: status.INTERNAL,
+        message: 'Failed to create',
+        details: error?.message || error,
+      });
+    }
   }
 
-  findAll() {
-    return this.quirofano.findMany();
+  async findAll(paginationDto: PaginationDto) {
+    try {
+      const totalPages = await this.quirofano.count();
+      const currentPage = paginationDto.page;
+      const pageSize = paginationDto.size;
+      return {
+        data: await this.quirofano.findMany({
+          skip: (currentPage - 1) * pageSize,
+          take: pageSize,
+        }),
+        meta: {
+          total: totalPages,
+          page: currentPage,
+          lastPage: Math.ceil(totalPages / pageSize),
+        },
+      };
+    } catch (error) {
+      throw new RpcException({
+        status: status.INTERNAL,
+        message: 'Failed to fetch',
+        details: error?.message || error,
+      });
+    }
   }
 
-  findOne(id: number) {
-    return this.quirofano.findUnique({ where: { id } });
+  async findOne(id: number) {
+    try {
+      const result = await this.quirofano.findUnique({ where: { id } });
+      if (!result) {
+        throw new RpcException({
+          status: status.NOT_FOUND,
+          message: 'Operating room not found',
+        });
+      }
+      return result;
+    } catch (error) {
+      if (error instanceof RpcException) throw error;
+      throw new RpcException({
+        status: status.INTERNAL,
+        message: 'Failed to fetch operating room',
+        details: error?.message || error,
+      });
+    }
   }
 
-  update(id: number, updateQuirofanoDto: UpdateQuirofanoDto) {
-    return this.quirofano.update({
-      where: { id },
-      data: updateQuirofanoDto,
-    });
+  async update(id: number, updateQuirofanoDto: UpdateQuirofanoDto) {
+    try {
+      return await this.quirofano.update({
+        where: { id },
+        data: updateQuirofanoDto,
+      });
+    } catch (error) {
+      throw new RpcException({
+        status: status.INTERNAL,
+        message: 'Failed to update',
+        details: error?.message || error,
+      });
+    }
   }
 
-  changeStatus(changeQuirofanoStatusDto: ChangeQuirofanoStatusDto) {
+  async changeStatus(changeQuirofanoStatusDto: ChangeQuirofanoStatusDto) {
     const { id, estado } = changeQuirofanoStatusDto;
-    return this.quirofano.update({ where: { id }, data: { estado } });
+    try {
+      return await this.quirofano.update({ where: { id }, data: { estado } });
+    } catch (error) {
+      throw new RpcException({
+        status: status.INTERNAL,
+        message: 'Failed to change status',
+        details: error?.message || error,
+      });
+    }
   }
 }

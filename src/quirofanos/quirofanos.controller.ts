@@ -1,11 +1,12 @@
-import { Controller } from '@nestjs/common';
+import { Controller, Query } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { QuirofanosService } from './quirofanos.service';
 import { CreateQuirofanoDto } from './dto/create-quirofano.dto';
 import { UpdateQuirofanoDto } from './dto/update-quirofano.dto';
 import { ChangeQuirofanoStatusDto } from './dto';
+import { PaginationDto } from 'src/common/dtos/pagination.dto';
 
-@Controller()
+@Controller('quirofanos')
 export class QuirofanosController {
   constructor(private readonly quirofanosService: QuirofanosService) {}
 
@@ -15,8 +16,8 @@ export class QuirofanosController {
   }
 
   @MessagePattern({ cmd: 'find_all_quirofanos' })
-  findAll() {
-    return this.quirofanosService.findAll();
+  findAll(@Payload() paginationDto: PaginationDto) {
+    return this.quirofanosService.findAll(paginationDto);
   }
 
   @MessagePattern({ cmd: 'find_one_quirofano' })
