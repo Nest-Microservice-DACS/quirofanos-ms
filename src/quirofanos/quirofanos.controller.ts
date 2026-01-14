@@ -15,12 +15,12 @@ export class QuirofanosController {
     return this.quirofanosService.create(createQuirofanoDto);
   }
 
-  @MessagePattern({ cmd: 'find_all_quirofanos' })
+  @MessagePattern({ cmd: 'get_quirofanos' })
   findAll(@Payload() paginationDto: PaginationDto) {
     return this.quirofanosService.findAll(paginationDto);
   }
 
-  @MessagePattern({ cmd: 'find_one_quirofano' })
+  @MessagePattern({ cmd: 'get_quirofano_by_id' })
   findOne(@Payload() id: number) {
     return this.quirofanosService.findOne(id);
   }

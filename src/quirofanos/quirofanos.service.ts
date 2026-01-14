@@ -1,4 +1,5 @@
 import {
+  HttpStatus,
   Injectable,
   Logger,
   OnModuleDestroy,
@@ -49,9 +50,8 @@ export class QuirofanosService
       return await this.quirofano.create({ data: createQuirofanoDto });
     } catch (error) {
       throw new RpcException({
-        status: status.INTERNAL,
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
         message: 'Failed to create',
-        details: error?.message || error,
       });
     }
   }
@@ -74,9 +74,8 @@ export class QuirofanosService
       };
     } catch (error) {
       throw new RpcException({
-        status: status.INTERNAL,
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
         message: 'Failed to fetch',
-        details: error?.message || error,
       });
     }
   }
@@ -86,7 +85,7 @@ export class QuirofanosService
       const result = await this.quirofano.findUnique({ where: { id } });
       if (!result) {
         throw new RpcException({
-          status: status.NOT_FOUND,
+          status: HttpStatus.NOT_FOUND,
           message: 'Operating room not found',
         });
       }
@@ -94,9 +93,8 @@ export class QuirofanosService
     } catch (error) {
       if (error instanceof RpcException) throw error;
       throw new RpcException({
-        status: status.INTERNAL,
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
         message: 'Failed to fetch operating room',
-        details: error?.message || error,
       });
     }
   }
@@ -109,9 +107,8 @@ export class QuirofanosService
       });
     } catch (error) {
       throw new RpcException({
-        status: status.INTERNAL,
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
         message: 'Failed to update',
-        details: error?.message || error,
       });
     }
   }
@@ -122,9 +119,8 @@ export class QuirofanosService
       return await this.quirofano.update({ where: { id }, data: { estado } });
     } catch (error) {
       throw new RpcException({
-        status: status.INTERNAL,
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
         message: 'Failed to change status',
-        details: error?.message || error,
       });
     }
   }
