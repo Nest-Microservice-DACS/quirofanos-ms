@@ -5,18 +5,18 @@ import {
   OnModuleDestroy,
   OnModuleInit,
 } from '@nestjs/common';
-import { CreateQuirofanoDto } from './dto/create-quirofano.dto';
-import { UpdateQuirofanoDto } from './dto/update-quirofano.dto';
+import { CreateOperatingRoomDto } from './dto/create-operating-room.dto';
+import { UpdateOperatingRoomDto } from './dto/update-operating-room.dto';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
 import { PrismaClient } from '../../generated/prisma/client';
-import { ChangeQuirofanoStatusDto } from './dto';
+import { ChangeOperatingRoomStatusDto } from './dto';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { last } from 'rxjs';
 import { RpcException } from '@nestjs/microservices';
 import { status } from '../common/grpc-status';
 @Injectable()
-export class QuirofanosService
+export class OperatingRoomService
   extends PrismaClient
   implements OnModuleInit, OnModuleDestroy
 {
@@ -33,36 +33,36 @@ export class QuirofanosService
     this.adapter = adapter;
   }
 
-  private readonly logger = new Logger(QuirofanosService.name);
+  private readonly logger = new Logger(OperatingRoomService.name);
 
   async onModuleInit() {
     await this.$connect();
-    this.logger.log('Prisma conectado a la base de datos');
+    this.logger.log('Prisma connected to the database');
   }
 
   async onModuleDestroy() {
     await this.$disconnect();
-    this.logger.log('Prisma desconectado de la base de datos');
+    this.logger.log('Prisma disconnected from the database');
   }
 
-  async create(createQuirofanoDto: CreateQuirofanoDto) {
+  async create(createOperatingRoomDto: CreateOperatingRoomDto) {
     try {
-      return await this.quirofano.create({ data: createQuirofanoDto });
+      return await this.operatingRoom.create({ data: createOperatingRoomDto });
     } catch (error) {
       throw new RpcException({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: 'Failed to create',
+        message: 'Failed to create operating room',
       });
     }
   }
 
   async findAll(paginationDto: PaginationDto) {
     try {
-      const totalPages = await this.quirofano.count();
+      const totalPages = await this.operatingRoom.count();
       const currentPage = paginationDto.page;
       const pageSize = paginationDto.size;
       return {
-        data: await this.quirofano.findMany({
+        data: await this.operatingRoom.findMany({
           skip: (currentPage - 1) * pageSize,
           take: pageSize,
         }),
@@ -75,14 +75,14 @@ export class QuirofanosService
     } catch (error) {
       throw new RpcException({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: 'Failed to fetch',
+        message: 'Failed to fetch operating rooms',
       });
     }
   }
 
   async findOne(id: number) {
     try {
-      const result = await this.quirofano.findUnique({ where: { id } });
+      const result = await this.operatingRoom.findUnique({ where: { id } });
       if (!result) {
         throw new RpcException({
           status: HttpStatus.NOT_FOUND,
@@ -99,11 +99,11 @@ export class QuirofanosService
     }
   }
 
-  async update(id: number, updateQuirofanoDto: UpdateQuirofanoDto) {
+  async update(id: number, updateOperatingRoomDto: UpdateOperatingRoomDto) {
     try {
-      return await this.quirofano.update({
+      return await this.operatingRoom.update({
         where: { id },
-        data: updateQuirofanoDto,
+        data: updateOperatingRoomDto,
       });
     } catch (error) {
       throw new RpcException({
@@ -113,10 +113,10 @@ export class QuirofanosService
     }
   }
 
-  async changeStatus(changeQuirofanoStatusDto: ChangeQuirofanoStatusDto) {
-    const { id, estado } = changeQuirofanoStatusDto;
+  async changeStatus(changeOperatingRoomStatusDto: ChangeOperatingRoomStatusDto) {
+    const { id, status: status } = changeOperatingRoomStatusDto;
     try {
-      return await this.quirofano.update({ where: { id }, data: { estado } });
+      return await this.operatingRoom.update({ where: { id }, data: { status } });
     } catch (error) {
       throw new RpcException({
         status: HttpStatus.INTERNAL_SERVER_ERROR,

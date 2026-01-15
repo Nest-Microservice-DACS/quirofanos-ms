@@ -14,17 +14,17 @@ datasource db {
   provider = "postgresql"
 }
 
-enum QuirofanoEstado {
-  DISPONIBLE
-  OCUPADO
-  MANTENIMIENTO
+enum OperatingRoomStatus {
+  AVAILABLE
+  OCCUPIED
+  UNDER_MAINTENANCE
 }
 
-model Quirofano {
+model OperatingRoom {
   id        Int             @id @default(autoincrement())
-  nombre    String          @unique
-  estado    QuirofanoEstado @default(DISPONIBLE)
-  ubicacion String?
+  name      String          @unique
+  status    OperatingRoomStatus @default(AVAILABLE)
+  location  String?
   createdAt DateTime        @default(now())
   updatedAt DateTime        @updatedAt
 }

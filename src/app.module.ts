@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { QuirofanosModule } from './quirofanos/quirofanos.module';
+import { QuirofanosModule } from './quirofanos/operating-room.module';
 
 @Module({
   imports: [QuirofanosModule],
